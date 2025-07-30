@@ -1,34 +1,57 @@
-import React, { useState, useEffect } from 'react'; // React와 훅을 가져옴
-import { fetchPopularMovies } from '../tmdb'; // 만든 API 함수 가져오기
-import MovieCard from '../components/MovieCard'; //  MovieCard 컴포넌트 가져오기 
+import React, { useState, useEffect } from 'react';
+import { fetchMovieList } from '../components/tmdb'; // tmdb.js에서 영화 검색 함수 import
+import MovieCard from '../components/MovieCard'; // 영화 카드 컴포넌트 import
 
-export default function MainPage() {
-  const [movies, setMovies] = useState([]); 
+function MainPage() {
+  const [movies, setMovies] = useState([]);
+  const [loading, setLoading] = useState(true); // 로딩 상태 추가
+  const [error, setError] = useState(null); // 에러 상태 추가
 
   useEffect(() => {
     async function getMovies() {
-      const data = await fetchPopularMovies();
-      setMovies(data);
+      setLoading(true);
+      setError(null);
+      try {
+        // 빈 문자열로 호출하면 TMDb에서 기본적으로 인기 영화 검색 결과를 받을 수 있음
+        const data = await fetchMovieList('');
+        setMovies(data.results || []);
+      } catch (err) {
+        console.error('영화 목록 불러오기 실패:', err);
+        setError('영화 목록을 불러오는 데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
     }
     getMovies();
   }, []);
 
-  if (movies.length === 0) {
-    return <div>영화 목록을 불러오는 중...</div>;
+  if (loading) {
+    return <div style={{ textAlign: 'center', marginTop: '50px', color: 'white' }}>영화 목록을 불러오는 중...</div>;
+  }
+
+  if (error) {
+    return <div style={{ textAlign: 'center', marginTop: '50px', color: 'red' }}>{error}</div>;
+  }
+
+  if (!movies || movies.length === 0) {
+    return <div style={{ textAlign: 'center', marginTop: '50px', color: 'white' }}>표시할 영화가 없습니다.</div>;
   }
 
   return (
-    <div className="movie-list">
-      {movies.map(movie => (
-        <MovieCard 
-          key={movie.id}
-          id={movie.id}
-          poster={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
-          title={movie.title}
-          rating={movie.vote_average}
-        />
+    <div
+      style={{
+        display: 'flex',
+        flexWrap: 'wrap',
+        justifyContent: 'center', // 카드들을 중앙 정렬
+        padding: '20px',
+        gap: '20px', // 카드 간격
+      }}
+    >
+      {movies.map((movie) => (
+        <MovieCard key={movie.id} movie={movie} /> // movie 객체를 MovieCard에 전달
       ))}
     </div>
-  );// MovieCard에 필요한 데이터들을 정확히 props로 넘겨줌
-        // poster는 TMDb 이미지 기본 경로랑 poster_path를 합쳐서 이미지를 보이게함
+  );
 }
+
+export default MainPage;

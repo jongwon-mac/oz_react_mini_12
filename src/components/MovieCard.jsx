@@ -1,28 +1,23 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 
-// 개별 props로 id, poster, title, rating을 받도록 변경
-function MovieCard({ id, poster, title, rating }) {
-  return (// Link 컴포넌트로 감싸서 클릭하면 /detail/영화ID 경로로 이동하게 해줌
-    <Link to={`/detail/${id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-      <div style={{
-        border: '1px solid #ddd',
-        borderRadius: '8px',
-        padding: '10px',
-        textAlign: 'center',
-        backgroundColor: '#fff',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        cursor: 'pointer',
-      }}>{/* poster props를 직접 사용 */}
-        <img src={poster} alt={title} style={{ width: '100%', borderRadius: '4px', marginBottom: '10px' }} />
-        <h3 style={{
-          fontSize: '1.1em',
-          margin: '0 0 5px 0',
-          whiteSpace: 'nowrap',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis'
-        }}>{title}</h3>   {/* rating props를 직접 사용 */}
-        <p style={{ fontSize: '0.9em', color: '#666', margin: '0' }}>평점: {rating}</p>
+function MovieCard({ movie }) {
+  if (!movie) return null;
+
+  const imageUrl = movie.poster_path ? `https://image.tmdb.org/t/p/w200${movie.poster_path}` : '/images/no-image.png';
+
+  return (
+    <Link to={`/detail/${movie.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+      <div style={{ width: '180px', backgroundColor: '#1a1a1a', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 8px rgba(0,0,0,0.4)', margin: '10px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', color: 'white', cursor: 'pointer', transition: 'transform 0.2s ease-in-out' }}
+        onMouseOver={(e) => (e.currentTarget.style.transform = 'scale(1.05)')}
+        onMouseOut={(e) => (e.currentTarget.style.transform = 'scale(1)')}
+      >
+        <img src={imageUrl} alt={movie.title || 'No Title'} style={{ width: '100%', height: '270px', objectFit: 'cover' }} />
+        <div style={{ padding: '10px' }}>
+          <h3 title={movie.title} style={{ margin: '0 0 5px 0', fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{movie.title || '제목 없음'}</h3>
+          <p style={{ margin: '0 0 3px 0', fontSize: '0.85rem', color: '#ccc' }}>개봉: {movie.release_date ? movie.release_date.slice(0, 4) : 'N/A'}</p>
+          <p style={{ margin: 0, fontSize: '0.85rem', color: '#ffcc00' }}>⭐ 평점: {movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A'}</p>
+        </div>
       </div>
     </Link>
   );
